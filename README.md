@@ -18,9 +18,13 @@ Visit [http://localhost:3000](http://localhost:3000) to see the app!
 
 The app works immediately with **mock data** (no API key required).
 
-## 📊 Getting Real Data (Free TMDb API)
+## 📊 Getting Real Data (Free APIs)
 
-### Step 1: Get TMDb API Key (Free)
+This app uses **two APIs** for optimal accuracy:
+- **TMDb API**: Netflix availability data (which titles are on Netflix in which regions)
+- **OMDb API**: Real IMDb ratings (more accurate than TMDb ratings)
+
+### Step 1: Get TMDb API Key (Required - Free)
 
 1. **Sign up** at [https://www.themoviedb.org/](https://www.themoviedb.org/)
 2. Go to **Settings** → **API** ([direct link](https://www.themoviedb.org/settings/api))
@@ -29,17 +33,33 @@ The app works immediately with **mock data** (no API key required).
 5. Fill out the form (for educational/personal use)
 6. **Copy your API key** (v3 auth key)
 
-### Step 2: Configure Environment
+### Step 2: Get OMDb API Key (Recommended - Free)
+
+1. Go to [http://www.omdbapi.com/apikey.aspx](http://www.omdbapi.com/apikey.aspx)
+2. Select **"FREE" tier** (1,000 requests/day)
+3. Enter your email and activate your key
+4. **Copy your API key** from the confirmation email
+
+**Why OMDb?** It provides real IMDb ratings and vote counts, which are more accurate than TMDb's ratings.
+
+### Step 3: Configure Environment
 
 Create a `.env.local` file in the project root:
 
 ```bash
-# Use real TMDb data
+# Use real data
 USE_MOCK_DATA=false
-TMDB_API_KEY=your_api_key_here
+
+# TMDb API - For Netflix availability
+TMDB_API_KEY=your_tmdb_api_key_here
+
+# OMDb API - For accurate IMDb ratings (recommended)
+OMDB_API_KEY=your_omdb_api_key_here
 ```
 
-Restart your development server and you'll now see real Netflix data!
+**Note:** If you don't provide `OMDB_API_KEY`, the app will fall back to TMDb ratings (still works, just less accurate).
+
+Restart your development server and you'll now see real Netflix data with accurate IMDb ratings!
 
 ## 🌐 Deployment Instructions
 
