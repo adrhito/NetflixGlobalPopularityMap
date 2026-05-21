@@ -1,7 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest:*)"
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm search:*)",
+      "Bash(npm uninstall:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout:*)",
+      "Bash(taskkill:*)",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "Bash(xargs:*)",
+      "Bash(vercel:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "puppeteer"
+  ]
 }

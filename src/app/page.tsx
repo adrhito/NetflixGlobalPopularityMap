@@ -1,65 +1,197 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { RankedTitle, ApiResponse } from '@/lib/types';
+
+export default function HomePage() {
+  const [topTitles, setTopTitles] = useState<RankedTitle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/worldwide');
+        const data: ApiResponse<RankedTitle[]> = await response.json();
+
+        if (data.success && data.data) {
+          setTopTitles(data.data.slice(0, 10));
+        } else {
+          setError(data.error || 'Failed to load data');
+        }
+      } catch (err) {
+        setError('Failed to load data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const topMovies = topTitles.filter((t) => t.title.type === 'movie').slice(0, 5);
+  const topTvShows = topTitles.filter((t) => t.title.type === 'tv').slice(0, 5);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="container mx-auto px-4 py-8">
+      {/* Hero Section */}
+      <section className="mb-12 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          Netflix Global Popularity Map
+        </h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+          Discover the most popular Netflix movies and TV shows worldwide. Explore regional trends,
+          compare ratings, and see what's trending across the globe.
+        </p>
+        <div className="flex justify-center gap-4">
+          <Link
+            href="/map"
+            className="px-6 py-3 bg-[#e50914] text-white rounded-lg font-medium hover:bg-[#b20710] transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Explore Map
+          </Link>
+          <Link
+            href="/worldwide"
+            className="px-6 py-3 bg-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-300 transition-colors"
           >
-            Documentation
-          </a>
+            View All Rankings
+          </Link>
         </div>
-      </main>
+      </section>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#e50914] border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading top titles...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-800 font-medium">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Top Titles */}
+      {!loading && !error && (
+        <>
+          {/* Top 10 Overall */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center">
+              <span className="text-[#e50914] mr-2">🏆</span>
+              Top 10 Worldwide
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              {topTitles.slice(0, 10).map((rankedTitle, index) => (
+                <div
+                  key={rankedTitle.title.imdbId}
+                  className="relative group cursor-pointer"
+                >
+                  <div className="absolute -top-3 -left-3 bg-[#e50914] text-white font-bold text-lg w-10 h-10 rounded-full flex items-center justify-center shadow-lg z-10">
+                    {index + 1}
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                    <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center">
+                      {rankedTitle.title.posterUrl ? (
+                        <img
+                          src={rankedTitle.title.posterUrl}
+                          alt={rankedTitle.title.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-4xl">🎬</div>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-semibold text-sm line-clamp-1" title={rankedTitle.title.title}>
+                        {rankedTitle.title.title}
+                      </h3>
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-600">
+                        <span>⭐ {rankedTitle.metrics.rating.toFixed(1)}</span>
+                        <span className="font-medium text-[#e50914]">
+                          {rankedTitle.globalScore}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Top Movies & TV Shows */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Top Movies */}
+            <section>
+              <h2 className="text-xl font-bold mb-4">🎬 Top Movies</h2>
+              <div className="space-y-3">
+                {topMovies.map((rankedTitle, index) => (
+                  <div
+                    key={rankedTitle.title.imdbId}
+                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded flex items-center justify-center font-bold text-[#e50914]">
+                        #{index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{rankedTitle.title.title}</h3>
+                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                          <span>⭐ {rankedTitle.metrics.rating.toFixed(1)}</span>
+                          <span>📍 {rankedTitle.regionCoverageCount} regions</span>
+                          <span className="font-medium text-[#e50914]">
+                            Score: {rankedTitle.globalScore}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Top TV Shows */}
+            <section>
+              <h2 className="text-xl font-bold mb-4">📺 Top TV Shows</h2>
+              <div className="space-y-3">
+                {topTvShows.map((rankedTitle, index) => (
+                  <div
+                    key={rankedTitle.title.imdbId}
+                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded flex items-center justify-center font-bold text-[#e50914]">
+                        #{index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{rankedTitle.title.title}</h3>
+                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                          <span>⭐ {rankedTitle.metrics.rating.toFixed(1)}</span>
+                          <span>📍 {rankedTitle.regionCoverageCount} regions</span>
+                          <span className="font-medium text-[#e50914]">
+                            Score: {rankedTitle.globalScore}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 }
