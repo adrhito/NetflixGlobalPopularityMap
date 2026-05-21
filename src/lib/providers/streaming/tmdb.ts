@@ -118,23 +118,42 @@ export class TmdbStreamingProvider implements StreamingAvailabilityProvider {
     regionCode: string
   ): Promise<Title[]> {
     try {
+      console.log(`[TMDB] Fetching ${type} for region ${regionCode}`);
       const allTitles: Title[] = [];
-      const maxPages = 2; // Fetch 2 pages (40 titles per type = 80 total, much faster)
+      const maxPages = 2;
 
-      // Fetch multiple pages in parallel for speed
+      // Fetch multiple pages in parallel
       const pagePromises = [];
       for (let page = 1; page <= maxPages; page++) {
         const url = `${this.baseUrl}/discover/${type}?api_key=${this.apiKey}&watch_region=${regionCode}&with_watch_providers=${this.netflixProviderId}&sort_by=popularity.desc&page=${page}`;
-        pagePromises.push(fetch(url).then(r => r.json()));
+        console.log(`[TMDB] Fetching page ${page}: ${url.replace(this.apiKey, 'REDACTED')}`);
+
+        pagePromises.push(
+          fetch(url).then(async (response) => {
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`[TMDB] API error ${response.status}: ${errorText}`);
+              throw new Error(`TMDB API returned ${response.status}: ${errorText}`);
+            }
+            return response.json();
+          })
+        );
       }
 
       const pageResults = await Promise.all(pagePromises);
 
       // Process all pages
-      for (const data of pageResults) {
+      for (let i = 0; i < pageResults.length; i++) {
+        const data = pageResults[i];
         const results = data.results || [];
+        console.log(`[TMDB] Page ${i + 1} returned ${results.length} results`);
 
-        // Convert to our Title format (batch process to reduce API calls)
+        if (results.length === 0) {
+          console.warn(`[TMDB] No results for ${type} in ${regionCode} on page ${i + 1}`);
+          continue;
+        }
+
+        // Convert to our Title format
         const pageTitles: Title[] = results.map((item: any) => ({
           imdbId: `tmdb_${type}_${item.id}`,
           title: item.title || item.name,
@@ -149,9 +168,11 @@ export class TmdbStreamingProvider implements StreamingAvailabilityProvider {
         allTitles.push(...pageTitles);
       }
 
+      console.log(`[TMDB] Total ${type} fetched for ${regionCode}: ${allTitles.length}`);
       return allTitles;
     } catch (error) {
-      console.error(`Error fetching popular ${type} for ${regionCode}:`, error);
+      console.error(`[TMDB] Error fetching popular ${type} for ${regionCode}:`, error);
+      console.error(`[TMDB] Error details:`, error instanceof Error ? error.message : error);
       return [];
     }
   }
