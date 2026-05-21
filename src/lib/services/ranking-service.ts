@@ -18,7 +18,7 @@ class RankingService {
     const cached = cacheService.get<RankedTitle[]>(cacheKey);
 
     if (cached) {
-      console.log(`[RankingService] Cache hit for ${regionCode}`);
+      console.log(`[RankingService] Cache hit for ${regionCode}, ${cached.length} titles`);
       return cached;
     }
 
@@ -29,14 +29,18 @@ class RankingService {
 
     // Get titles available in this region
     const titles = await streamingProvider.getNetflixTitlesByRegion(regionCode);
+    console.log(`[RankingService] Got ${titles.length} titles from streaming provider for ${regionCode}`);
 
     // Get metrics for all titles
     const rankedTitles: RankedTitle[] = [];
+    let metricsFound = 0;
+    let metricsNotFound = 0;
 
     for (const title of titles) {
       const metrics = await imdbProvider.getTitleMetrics(title.imdbId);
 
       if (metrics) {
+        metricsFound++;
         const popularityScore = calculatePopularityScore(metrics);
 
         rankedTitles.push({
@@ -45,8 +49,13 @@ class RankingService {
           popularityScore,
           regionCoverageCount: title.netflixRegions.length,
         });
+      } else {
+        metricsNotFound++;
       }
     }
+
+    console.log(`[RankingService] Metrics: ${metricsFound} found, ${metricsNotFound} not found for ${regionCode}`);
+    console.log(`[RankingService] Final ranked titles count for ${regionCode}: ${rankedTitles.length}`);
 
     // Sort by popularity score (descending)
     rankedTitles.sort((a, b) => b.popularityScore - a.popularityScore);
