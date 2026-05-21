@@ -1,5 +1,5 @@
 declare module 'react-simple-maps' {
-  import { ComponentType, SVGProps } from 'react';
+  import { ComponentType } from 'react';
 
   export interface GeographyProps {
     geography: any;
@@ -7,32 +7,16 @@ declare module 'react-simple-maps' {
     stroke?: string;
     strokeWidth?: number;
     style?: {
-      default?: SVGProps<SVGPathElement>;
-      hover?: SVGProps<SVGPathElement>;
-      pressed?: SVGProps<SVGPathElement>;
+      default?: any;
+      hover?: any;
+      pressed?: any;
     };
     onClick?: () => void;
+    [key: string]: any;
   }
 
-  export const ComposableMap: ComponentType<{
-    projection?: string;
-    projectionConfig?: {
-      scale?: number;
-      center?: [number, number];
-    };
-    children?: React.ReactNode;
-  }>;
-
-  export const Geographies: ComponentType<{
-    geography: string;
-    children: (props: { geographies: any[] }) => React.ReactNode;
-  }>;
-
+  export const ComposableMap: ComponentType<any>;
+  export const Geographies: ComponentType<any>;
   export const Geography: ComponentType<GeographyProps>;
-
-  export const ZoomableGroup: ComponentType<{
-    zoom?: number;
-    center?: [number, number];
-    children?: React.ReactNode;
-  }>;
+  export const ZoomableGroup: ComponentType<any>;
 }
