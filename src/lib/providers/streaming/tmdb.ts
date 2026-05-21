@@ -120,7 +120,7 @@ export class TmdbStreamingProvider implements StreamingAvailabilityProvider {
     try {
       console.log(`[TMDB] Fetching ${type} for region ${regionCode}`);
       const allTitles: Title[] = [];
-      const maxPages = 2;
+      const maxPages = 3; // 3 pages × 20 results = 60 per type (60 movies + 60 TV = 120 total, take top 100)
 
       // Fetch multiple pages in parallel
       const pagePromises = [];

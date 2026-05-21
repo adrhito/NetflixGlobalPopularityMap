@@ -14,6 +14,7 @@ export default function RegionDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'popularity' | 'rating' | 'votes'>('popularity');
 
   const regionName = titles[0]?.title.netflixRegions.find(r => r === regionCode)
     ? getRegionName(regionCode)
@@ -59,8 +60,24 @@ export default function RegionDetailPage() {
       );
     }
 
+    // Sort based on selected option
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.metrics.rating - a.metrics.rating;
+        case 'votes':
+          return b.metrics.voteCount - a.metrics.voteCount;
+        case 'popularity':
+        default:
+          return b.popularityScore - a.popularityScore;
+      }
+    });
+
+    // Limit to top 100
+    filtered = filtered.slice(0, 100);
+
     setFilteredTitles(filtered);
-  }, [filter, searchTerm, titles]);
+  }, [filter, searchTerm, titles, sortBy]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -69,7 +86,7 @@ export default function RegionDetailPage() {
           {regionName} Netflix Rankings
         </h1>
         <p className="text-gray-600">
-          Top {titles.length} titles ranked by popularity
+          Top 100 titles sorted by {sortBy}
         </p>
       </div>
 
@@ -88,45 +105,83 @@ export default function RegionDetailPage() {
 
       {!loading && !error && (
         <>
-          <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="mb-6 space-y-4">
             <input
               type="text"
               placeholder="Search titles..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e50914]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e50914]"
             />
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'all'
-                    ? 'bg-[#e50914] text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilter('movie')}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'movie'
-                    ? 'bg-[#e50914] text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Movies
-              </button>
-              <button
-                onClick={() => setFilter('tv')}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'tv'
-                    ? 'bg-[#e50914] text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                TV Shows
-              </button>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Type Filter */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'all'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setFilter('movie')}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'movie'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Movies
+                </button>
+                <button
+                  onClick={() => setFilter('tv')}
+                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                    filter === 'tv'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  TV Shows
+                </button>
+              </div>
+
+              {/* Sort Options */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSortBy('popularity')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                    sortBy === 'popularity'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  📊 Popularity
+                </button>
+                <button
+                  onClick={() => setSortBy('rating')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                    sortBy === 'rating'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  ⭐ Rating
+                </button>
+                <button
+                  onClick={() => setSortBy('votes')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                    sortBy === 'votes'
+                      ? 'bg-[#e50914] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  🗳️ Votes
+                </button>
+              </div>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ export default function WorldwidePage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'global' | 'popularity' | 'rating' | 'votes'>('global');
 
   useEffect(() => {
     async function fetchData() {
@@ -33,50 +34,108 @@ export default function WorldwidePage() {
     fetchData();
   }, []);
 
-  const filteredTitles = titles.filter((t) => {
-    const matchesType = filter === 'all' || t.title.type === filter;
-    const matchesSearch = t.title.title.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesSearch;
-  });
+  const filteredTitles = titles
+    .filter((t) => {
+      const matchesType = filter === 'all' || t.title.type === filter;
+      const matchesSearch = t.title.title.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesType && matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.metrics.rating - a.metrics.rating;
+        case 'votes':
+          return b.metrics.voteCount - a.metrics.voteCount;
+        case 'popularity':
+          return b.popularityScore - a.popularityScore;
+        case 'global':
+        default:
+          return (b.globalScore || 0) - (a.globalScore || 0);
+      }
+    })
+    .slice(0, 100); // Limit to top 100
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">🌍 Worldwide Top Titles</h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">🌍 Worldwide Top Titles</h1>
+        <p className="text-gray-600">Top 100 titles sorted by {sortBy === 'global' ? 'global score' : sortBy}</p>
+      </div>
 
       {/* Filters */}
-      <div className="mb-6 flex gap-4 flex-wrap">
+      <div className="mb-6 space-y-4">
         <input
           type="text"
           placeholder="Search titles..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg flex-1 min-w-[200px]"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e50914]"
         />
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'all' ? 'bg-[#e50914] text-white' : 'bg-gray-200'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('movie')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'movie' ? 'bg-[#e50914] text-white' : 'bg-gray-200'
-            }`}
-          >
-            Movies
-          </button>
-          <button
-            onClick={() => setFilter('tv')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'tv' ? 'bg-[#e50914] text-white' : 'bg-gray-200'
-            }`}
-          >
-            TV Shows
-          </button>
+
+        <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+          {/* Type Filter */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'all' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('movie')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'movie' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Movies
+            </button>
+            <button
+              onClick={() => setFilter('tv')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'tv' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              TV Shows
+            </button>
+          </div>
+
+          {/* Sort Options */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSortBy('global')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                sortBy === 'global' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🌍 Global
+            </button>
+            <button
+              onClick={() => setSortBy('popularity')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                sortBy === 'popularity' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              📊 Popularity
+            </button>
+            <button
+              onClick={() => setSortBy('rating')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                sortBy === 'rating' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              ⭐ Rating
+            </button>
+            <button
+              onClick={() => setSortBy('votes')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                sortBy === 'votes' ? 'bg-[#e50914] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🗳️ Votes
+            </button>
+          </div>
         </div>
       </div>
 
