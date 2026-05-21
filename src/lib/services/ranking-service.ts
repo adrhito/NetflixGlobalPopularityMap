@@ -12,6 +12,7 @@ import { getAllRegionCodes } from '@/lib/data/mock-regions';
 class RankingService {
   /**
    * Get ranked titles for a specific region
+   * Uses worldwide data to show cross-region availability
    */
   async getRankedTitlesByRegion(regionCode: string): Promise<RankedTitle[]> {
     const cacheKey = `region:${regionCode}`;
@@ -24,46 +25,23 @@ class RankingService {
 
     console.log(`[RankingService] Fetching data for ${regionCode}`);
 
-    const streamingProvider = getStreamingProvider();
-    const imdbProvider = getImdbProvider();
+    // Get worldwide data (which has all region info for each title)
+    const worldwideTitles = await this.getWorldwideRankedTitles();
 
-    // Get titles available in this region
-    const titles = await streamingProvider.getNetflixTitlesByRegion(regionCode);
-    console.log(`[RankingService] Got ${titles.length} titles from streaming provider for ${regionCode}`);
+    // Filter for titles available in this region
+    const regionTitles = worldwideTitles.filter((rankedTitle) =>
+      rankedTitle.title.netflixRegions.includes(regionCode)
+    );
 
-    // Get metrics for all titles
-    const rankedTitles: RankedTitle[] = [];
-    let metricsFound = 0;
-    let metricsNotFound = 0;
+    console.log(`[RankingService] Found ${regionTitles.length} titles for ${regionCode} from worldwide data`);
 
-    for (const title of titles) {
-      const metrics = await imdbProvider.getTitleMetrics(title.imdbId);
-
-      if (metrics) {
-        metricsFound++;
-        const popularityScore = calculatePopularityScore(metrics);
-
-        rankedTitles.push({
-          title,
-          metrics,
-          popularityScore,
-          regionCoverageCount: title.netflixRegions.length,
-        });
-      } else {
-        metricsNotFound++;
-      }
-    }
-
-    console.log(`[RankingService] Metrics: ${metricsFound} found, ${metricsNotFound} not found for ${regionCode}`);
-    console.log(`[RankingService] Final ranked titles count for ${regionCode}: ${rankedTitles.length}`);
-
-    // Sort by popularity score (descending)
-    rankedTitles.sort((a, b) => b.popularityScore - a.popularityScore);
+    // Sort by popularity score (descending) for this region
+    regionTitles.sort((a, b) => b.popularityScore - a.popularityScore);
 
     // Cache the result
-    cacheService.set(cacheKey, rankedTitles);
+    cacheService.set(cacheKey, regionTitles);
 
-    return rankedTitles;
+    return regionTitles;
   }
 
   /**
