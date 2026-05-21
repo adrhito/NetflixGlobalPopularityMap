@@ -94,8 +94,19 @@ class RankingService {
       const titles = await streamingProvider.getNetflixTitlesByRegion(regionCode);
 
       for (const title of titles) {
-        if (!titleMap.has(title.imdbId)) {
-          titleMap.set(title.imdbId, title);
+        const existingTitle = titleMap.get(title.imdbId);
+
+        if (existingTitle) {
+          // Merge regions - add this region if not already included
+          if (!existingTitle.netflixRegions.includes(regionCode)) {
+            existingTitle.netflixRegions.push(regionCode);
+          }
+        } else {
+          // First time seeing this title - add it with current region
+          titleMap.set(title.imdbId, {
+            ...title,
+            netflixRegions: [regionCode],
+          });
         }
       }
     }

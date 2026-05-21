@@ -144,6 +144,21 @@ export default function WorldwidePage() {
                       <span className="ml-2 font-medium">{rankedTitle.popularityScore}</span>
                     </div>
                   </div>
+                  {rankedTitle.title.netflixRegions && rankedTitle.title.netflixRegions.length > 0 && (
+                    <div className="mt-3">
+                      <div className="text-xs text-gray-600 mb-2">Available in:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {rankedTitle.title.netflixRegions.map((region) => (
+                          <span
+                            key={region}
+                            className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                          >
+                            {region}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

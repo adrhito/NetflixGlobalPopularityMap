@@ -187,6 +187,23 @@ export default function RegionDetailPage() {
                         </span>
                       </div>
                     </div>
+                    {rankedTitle.title.netflixRegions && rankedTitle.title.netflixRegions.length > 1 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-gray-600 mb-1">Also available in:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {rankedTitle.title.netflixRegions
+                            .filter(r => r !== regionCode)
+                            .map((region) => (
+                              <span
+                                key={region}
+                                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                              >
+                                {region}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
