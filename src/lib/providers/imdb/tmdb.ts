@@ -17,22 +17,42 @@ export class TmdbImdbProvider implements ImdbProvider {
 
   async getTitleMetrics(imdbId: string): Promise<ImdbMetrics | null> {
     try {
-      // Find the title by IMDb ID
-      const findUrl = `${this.baseUrl}/find/${imdbId}?api_key=${this.apiKey}&external_source=imdb_id`;
-      const findResponse = await fetch(findUrl);
-      const findData = await findResponse.json();
+      let type: 'movie' | 'tv';
+      let tmdbId: number;
 
-      const result = findData.movie_results?.[0] || findData.tv_results?.[0];
-      if (!result) {
-        return null;
+      // Check if this is a synthetic TMDB ID (format: tmdb_movie_12345 or tmdb_tv_12345)
+      const syntheticMatch = imdbId.match(/^tmdb_(movie|tv)_(\d+)$/);
+
+      if (syntheticMatch) {
+        // Extract type and ID directly from synthetic format
+        type = syntheticMatch[1] as 'movie' | 'tv';
+        tmdbId = parseInt(syntheticMatch[2], 10);
+        console.log(`[TMDB IMDb] Using synthetic ID: ${imdbId} -> ${type} ${tmdbId}`);
+      } else {
+        // Real IMDb ID - use find endpoint
+        const findUrl = `${this.baseUrl}/find/${imdbId}?api_key=${this.apiKey}&external_source=imdb_id`;
+        const findResponse = await fetch(findUrl);
+        const findData = await findResponse.json();
+
+        const result = findData.movie_results?.[0] || findData.tv_results?.[0];
+        if (!result) {
+          console.log(`[TMDB IMDb] No results found for IMDb ID: ${imdbId}`);
+          return null;
+        }
+
+        type = findData.movie_results?.[0] ? 'movie' : 'tv';
+        tmdbId = result.id;
       }
-
-      const type = findData.movie_results?.[0] ? 'movie' : 'tv';
-      const tmdbId = result.id;
 
       // Get detailed info including vote count
       const detailsUrl = `${this.baseUrl}/${type}/${tmdbId}?api_key=${this.apiKey}`;
       const detailsResponse = await fetch(detailsUrl);
+
+      if (!detailsResponse.ok) {
+        console.error(`[TMDB IMDb] API error ${detailsResponse.status} for ${type}/${tmdbId}`);
+        return null;
+      }
+
       const details = await detailsResponse.json();
 
       return {
@@ -43,7 +63,7 @@ export class TmdbImdbProvider implements ImdbProvider {
         fetchedAt: new Date(),
       };
     } catch (error) {
-      console.error(`Error fetching metrics for ${imdbId}:`, error);
+      console.error(`[TMDB IMDb] Error fetching metrics for ${imdbId}:`, error);
       return null;
     }
   }
