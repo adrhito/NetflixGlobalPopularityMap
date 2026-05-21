@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { rankingService } from '@/lib/services/ranking-service';
+import { cacheService } from '@/lib/services/cache-service';
 import { ApiResponse, RankedTitle } from '@/lib/types';
 
 /**
  * GET /api/regions/[regionCode]
  * Returns ranked titles for a specific region
+ * Query params:
+ *  - clearCache=true: Clears cache before fetching
  */
 export async function GET(
   request: Request,
@@ -12,6 +15,8 @@ export async function GET(
 ) {
   try {
     const { regionCode } = await params;
+    const { searchParams } = new URL(request.url);
+    const clearCache = searchParams.get('clearCache') === 'true';
 
     if (!regionCode) {
       const response: ApiResponse<null> = {
@@ -21,6 +26,11 @@ export async function GET(
       };
 
       return NextResponse.json(response, { status: 400 });
+    }
+
+    if (clearCache) {
+      console.log(`[API /api/regions/${regionCode}] Clearing cache`);
+      cacheService.clear();
     }
 
     const rankedTitles = await rankingService.getRankedTitlesByRegion(
