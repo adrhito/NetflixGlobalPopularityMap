@@ -11,7 +11,7 @@ import { RegionSummary } from '@/lib/types';
 
 const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json';
 
-// Map ISO country codes to region codes
+// Map ISO country codes to region codes (major markets for faster loading)
 const countryToRegionMap: Record<string, string> = {
   '840': 'US',  // United States
   '826': 'GB',  // United Kingdom
@@ -29,31 +29,10 @@ const countryToRegionMap: Record<string, string> = {
   '528': 'NL',  // Netherlands
   '752': 'SE',  // Sweden
   '032': 'AR',  // Argentina
-  '056': 'BE',  // Belgium
-  '756': 'CH',  // Switzerland
-  '152': 'CL',  // Chile
-  '170': 'CO',  // Colombia
-  '203': 'CZ',  // Czech Republic
-  '208': 'DK',  // Denmark
-  '246': 'FI',  // Finland
-  '344': 'HK',  // Hong Kong
-  '360': 'ID',  // Indonesia
-  '372': 'IE',  // Ireland
-  '376': 'IL',  // Israel
-  '458': 'MY',  // Malaysia
-  '578': 'NO',  // Norway
-  '554': 'NZ',  // New Zealand
-  '604': 'PE',  // Peru
-  '608': 'PH',  // Philippines
   '616': 'PL',  // Poland
-  '620': 'PT',  // Portugal
-  '642': 'RO',  // Romania
-  '643': 'RU',  // Russia
-  '702': 'SG',  // Singapore
-  '764': 'TH',  // Thailand
   '792': 'TR',  // Turkey
-  '158': 'TW',  // Taiwan
-  '710': 'ZA',  // South Africa
+  '764': 'TH',  // Thailand
+  '360': 'ID',  // Indonesia
 };
 
 export default function MapPage() {

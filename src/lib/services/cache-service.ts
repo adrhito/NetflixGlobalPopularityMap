@@ -5,7 +5,7 @@ import { CacheEntry } from '@/lib/types';
  */
 class CacheService {
   private cache: Map<string, CacheEntry<any>> = new Map();
-  private defaultTTL: number = 15 * 60 * 1000; // 15 minutes in milliseconds
+  private defaultTTL: number = 60 * 60 * 1000; // 1 hour in milliseconds (faster repeat visits)
 
   /**
    * Get a value from cache
