@@ -2,6 +2,8 @@
 
 Discover the most popular Netflix movies and TV shows worldwide, broken down by region. Features an interactive world map, detailed rankings, and a sophisticated popularity scoring algorithm.
 
+**🌐 Live Demo:** [https://netvpn.vercel.app](https://netvpn.vercel.app)
+
 ## 🚀 Quick Start
 
 ### Local Development
@@ -107,7 +109,7 @@ vercel
    - Key: `TMDB_API_KEY` → Value: `your_actual_api_key`
 4. Redeploy: `vercel --prod`
 
-Your app will be live at `https://your-project.vercel.app`!
+Your app will be live at [https://netvpn.vercel.app](https://netvpn.vercel.app)!
 
 ### Alternative: Deploy to Netlify (Also Free)
 
